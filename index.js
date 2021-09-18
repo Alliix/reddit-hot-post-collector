@@ -1,5 +1,6 @@
 import ObjectsToCsv from "objects-to-csv";
 import snoowrap from "snoowrap";
+import config from "./config.js";
 
 function removeSpecialChar(str) {
   if (str) return str.toString().replace(/&#x200B;/g, "");
@@ -7,14 +8,14 @@ function removeSpecialChar(str) {
 
 const r = new snoowrap({
   userAgent: "Hot posts scraper",
-  clientId: "rMVUrHgVCfrWOg",
-  clientSecret: "kO5RoMOUhYMY0TB-FE6QV6_ycWXn0w",
-  username: "Alliix",
-  password: "SuparmooN0",
+  clientId: config.clientId,
+  clientSecret: config.clientSecret,
+  username: config.username,
+  password: config.password,
 });
 
 r.getHot()
-    .fetchAll()
+  .fetchAll()
   .map((post) => {
     return {
       id: post.id,
