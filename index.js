@@ -6,6 +6,33 @@ function removeSpecialChar(str) {
   if (str) return str.toString().replace(/\n/g, "").replace(",", "_");
 }
 
+const formatTime = (unix_timestamp) => {
+  var a = new Date(unix_timestamp * 1000);
+  var months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  var year = a.getFullYear();
+  var month = months[a.getMonth()];
+  var date = a.getDate();
+  var hour = a.getHours();
+  var min = a.getMinutes();
+  var sec = a.getSeconds();
+  var time =
+    date + " " + month + " " + year + " " + hour + ":" + min + ":" + sec;
+  return time;
+};
+
 const r = new snoowrap({
   userAgent: "Hot posts scraper",
   clientId: config.clientId,
@@ -25,7 +52,7 @@ r.getHot()
       author: post.author.name,
       title: post.title,
       selfText: removeSpecialChar(post.selftext),
-      date: post.created_utc,
+      date: formatTime(post.created_utc),
       score: post.score,
       subreddit: post.subreddit_name_prefixed,
       numComments: post.num_comments,
