@@ -2,80 +2,19 @@ import ObjectsToCsv from "objects-to-csv";
 import snoowrap from "snoowrap";
 import config from "./config.js";
 import cron from "node-cron";
-import http from "http";
-import express from "express";
 
-var app = express();
-
-app.set("port", process.env.PORT || 5000);
-app.use(express.static("index"));
-
-app.get("/", function (request, response) {
-  response.send("Hello World!");
-});
-
-app.listen(app.get("port"), function () {
-  cron.schedule("* * * * *", function () {
-    console.log("1m");
-    r.getHot()
-      // .fetchAll()
-      .then((posts) => {
-        return posts.filter((post) => post.selftext !== "");
-      })
-      .map((post) => {
-        return {
-          id: post.id,
-          author: post.author.name,
-          title: post.title,
-          selfText: removeSpecialChar(post.selftext),
-          date: formatTime(post.created_utc),
-          score: post.score,
-          subreddit: post.subreddit_name_prefixed,
-          numComments: post.num_comments,
-          spoiler: post.spoiler ? true : false,
-          nsfw: post.over_18 ? true : false,
-          isVideo: post.is_video,
-        };
-      })
-      .then(async (posts) => {
-        const csv = new ObjectsToCsv(posts);
-        const now = new Date();
-        const date = `${now.getDate()}-${
-          now.getMonth() + 1
-        }-${now.getFullYear()}`;
-        await csv.toDisk(`./${date}.csv`);
-      });
-  });
-});
-
-function removeSpecialChar(str) {
+const removeSpecialChar = (str) => {
   if (str) return str.toString().replace(/\n/g, "").replace(",", "_");
-}
+};
 
 const formatTime = (unix_timestamp) => {
-  var a = new Date(unix_timestamp * 1000);
-  var months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  var year = a.getFullYear();
-  var month = months[a.getMonth()];
-  var date = a.getDate();
-  var hour = a.getHours();
-  var min = a.getMinutes();
-  var sec = a.getSeconds();
-  var time =
-    date + " " + month + " " + year + " " + hour + ":" + min + ":" + sec;
+  let a = new Date(unix_timestamp * 1000);
+  let year = a.getFullYear();
+  let month = a.getMonth() + 1;
+  let date = a.getDate();
+  let hour = a.getHours();
+  let min = a.getMinutes();
+  let time = hour + ":" + min + " " + date + "-" + month + "-" + year;
   return time;
 };
 
@@ -87,34 +26,34 @@ const r = new snoowrap({
   password: config.password,
 });
 
-// console.log("I'm live!");
-// cron.schedule("0 0 * * *", function () {
-//   r.getHot()
-//     .fetchAll()
-//     .then((posts) => {
-//       return posts.filter((post) => post.selftext !== "");
-//     })
-//     .map((post) => {
-//       return {
-//         id: post.id,
-//         author: post.author.name,
-//         title: post.title,
-//         selfText: removeSpecialChar(post.selftext),
-//         date: formatTime(post.created_utc),
-//         score: post.score,
-//         subreddit: post.subreddit_name_prefixed,
-//         numComments: post.num_comments,
-//         spoiler: post.spoiler ? true : false,
-//         nsfw: post.over_18 ? true : false,
-//         isVideo: post.is_video,
-//       };
-//     })
-//     .then(async (posts) => {
-//       const csv = new ObjectsToCsv(posts);
-//       const now = new Date();
-//       const date = `${now.getDate()}-${
-//         now.getMonth() + 1
-//       }-${now.getFullYear()}`;
-//       await csv.toDisk(`./${date}.csv`);
-//     });
-// });
+cron.schedule("0 0 * * *", function () {
+  r.getHot()
+    .fetchAll()
+    .then((posts) => {
+      return posts.filter((post) => post.selftext !== "");
+    })
+    .map((post) => {
+      return {
+        id: post.id,
+        author: post.author.name,
+        title: post.title,
+        selfText: removeSpecialChar(post.selftext),
+        date: formatTime(post.created_utc),
+        score: post.score,
+        subreddit: post.subreddit_name_prefixed,
+        numComments: post.num_comments,
+        spoiler: post.spoiler ? true : false,
+        nsfw: post.over_18 ? true : false,
+        isVideo: post.is_video,
+      };
+    })
+    .then(async (posts) => {
+      const csv = new ObjectsToCsv(posts);
+      const now = new Date();
+      const date = `${now.getDate()}-${
+        now.getMonth() + 1
+      }-${now.getFullYear()}`;
+      await csv.toDisk(`./posts/${date}.csv`);
+    });
+  console.log(`Saving posts to ${date}.csv`);
+});
