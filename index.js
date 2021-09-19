@@ -45,6 +45,7 @@ const r = new snoowrap({
 
 http
   .createServer(function (request, response) {
+    console.log("I'm live!")
     cron.schedule("0 0 * * *", function () {
       r.getHot()
         .fetchAll()
