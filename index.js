@@ -3,6 +3,50 @@ import snoowrap from "snoowrap";
 import config from "./config.js";
 import cron from "node-cron";
 import http from "http";
+import express from "express";
+
+var app = express();
+
+app.set("port", process.env.PORT || 5000);
+app.use(express.static("index"));
+
+app.get("/", function (request, response) {
+  response.send("Hello World!");
+});
+
+app.listen(app.get("port"), function () {
+  cron.schedule("* * * * *", function () {
+    console.log("1m");
+    r.getHot()
+      // .fetchAll()
+      .then((posts) => {
+        return posts.filter((post) => post.selftext !== "");
+      })
+      .map((post) => {
+        return {
+          id: post.id,
+          author: post.author.name,
+          title: post.title,
+          selfText: removeSpecialChar(post.selftext),
+          date: formatTime(post.created_utc),
+          score: post.score,
+          subreddit: post.subreddit_name_prefixed,
+          numComments: post.num_comments,
+          spoiler: post.spoiler ? true : false,
+          nsfw: post.over_18 ? true : false,
+          isVideo: post.is_video,
+        };
+      })
+      .then(async (posts) => {
+        const csv = new ObjectsToCsv(posts);
+        const now = new Date();
+        const date = `${now.getDate()}-${
+          now.getMonth() + 1
+        }-${now.getFullYear()}`;
+        await csv.toDisk(`./${date}.csv`);
+      });
+  });
+});
 
 function removeSpecialChar(str) {
   if (str) return str.toString().replace(/\n/g, "").replace(",", "_");
@@ -43,38 +87,34 @@ const r = new snoowrap({
   password: config.password,
 });
 
-http
-  .createServer(function (request, response) {
-    console.log("I'm live!")
-    cron.schedule("0 0 * * *", function () {
-      r.getHot()
-        .fetchAll()
-        .then((posts) => {
-          return posts.filter((post) => post.selftext !== "");
-        })
-        .map((post) => {
-          return {
-            id: post.id,
-            author: post.author.name,
-            title: post.title,
-            selfText: removeSpecialChar(post.selftext),
-            date: formatTime(post.created_utc),
-            score: post.score,
-            subreddit: post.subreddit_name_prefixed,
-            numComments: post.num_comments,
-            spoiler: post.spoiler ? true : false,
-            nsfw: post.over_18 ? true : false,
-            isVideo: post.is_video,
-          };
-        })
-        .then(async (posts) => {
-          const csv = new ObjectsToCsv(posts);
-          const now = new Date();
-          const date = `${now.getDate()}-${
-            now.getMonth() + 1
-          }-${now.getFullYear()}`;
-          await csv.toDisk(`./${date}.csv`);
-        });
-    });
-  })
-  .listen(process.env.PORT || 5000);
+// console.log("I'm live!");
+// cron.schedule("0 0 * * *", function () {
+//   r.getHot()
+//     .fetchAll()
+//     .then((posts) => {
+//       return posts.filter((post) => post.selftext !== "");
+//     })
+//     .map((post) => {
+//       return {
+//         id: post.id,
+//         author: post.author.name,
+//         title: post.title,
+//         selfText: removeSpecialChar(post.selftext),
+//         date: formatTime(post.created_utc),
+//         score: post.score,
+//         subreddit: post.subreddit_name_prefixed,
+//         numComments: post.num_comments,
+//         spoiler: post.spoiler ? true : false,
+//         nsfw: post.over_18 ? true : false,
+//         isVideo: post.is_video,
+//       };
+//     })
+//     .then(async (posts) => {
+//       const csv = new ObjectsToCsv(posts);
+//       const now = new Date();
+//       const date = `${now.getDate()}-${
+//         now.getMonth() + 1
+//       }-${now.getFullYear()}`;
+//       await csv.toDisk(`./${date}.csv`);
+//     });
+// });
