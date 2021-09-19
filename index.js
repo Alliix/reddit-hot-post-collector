@@ -1,4 +1,3 @@
-import ObjectsToCsv from "objects-to-csv";
 import snoowrap from "snoowrap";
 import config from "./config.js";
 import cron from "node-cron";
@@ -14,10 +13,6 @@ var mail = nodemailer.createTransport({
     pass: process.env.EMAIL_PASSWORD,
   },
 });
-
-const removeSpecialChar = (str) => {
-  if (str) return str.toString().replace(/\n/g, "").replace(",", "_");
-};
 
 const formatTime = (unix_timestamp) => {
   let uDate = new Date(unix_timestamp * 1000);
@@ -76,15 +71,13 @@ app.listen(app.get("port"), function () {
         };
       })
       .then(async (posts) => {
-        // const csv = new ObjectsToCsv(posts);
         const time = formatDateNow(new Date());
-        // await csv.toDisk(`./posts/${time}.csv`);
         const postsStr = JSON.stringify(posts);
         var mailOptions = {
           from: process.env.EMAIL,
           to: process.env.EMAIL_TO,
           subject: `Hot Posts for ${time}`,
-          html: "<h1>Hello!</h1><p>Hot posts incoming</p>",
+          html: "<h1>Hello!</h1><p>Hot posts incoming!</p>",
           attachments: [
             {
               filename: `${time}.txt`,
