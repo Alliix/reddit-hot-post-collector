@@ -50,6 +50,8 @@ app.get("/", function (request, response) {
   response.send("Collecting hot posts!");
 });
 
+//////
+
 app.listen(app.get("port"), function () {
   cron.schedule("0 0 * * *", function () {
     r.getHot()
