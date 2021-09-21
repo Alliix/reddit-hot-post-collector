@@ -47,14 +47,13 @@ app.set("port", process.env.PORT || 5000);
 app.use(express.static("index"));
 
 app.get("/", function (request, response) {
-  response.send("Collecting hot posts!");
+  response.send("Collecting posts!");
 });
-
-//////
 
 app.listen(app.get("port"), function () {
   cron.schedule("0 0 * * *", function () {
-    r.getHot()
+    r.getSubreddit("depression")
+      .getNew()
       .fetchAll()
       .filter((post) => post.selftext !== "")
       .map((post) => {
@@ -78,11 +77,53 @@ app.listen(app.get("port"), function () {
         var mailOptions = {
           from: process.env.EMAIL,
           to: process.env.EMAIL_TO,
-          subject: `Hot Posts for ${time}`,
-          html: "<h1>Hello!</h1><p>Hot posts incoming!</p>",
+          subject: `Depression Posts for ${time}`,
+          html: "<h1>Hello!</h1><p>Depression posts incoming!</p>",
           attachments: [
             {
-              filename: `${time}.txt`,
+              filename: `DepressionPosts-${time}.txt`,
+              content: postsStr,
+            },
+          ],
+        };
+        mail.sendMail(mailOptions, function (error, info) {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log("Email sent: " + info.response);
+          }
+        });
+      });
+
+    r.getNew()
+      .fetchAll()
+      .filter((post) => post.selftext !== "")
+      .map((post) => {
+        return {
+          id: post.id,
+          author: post.author.name,
+          title: post.title,
+          selfText: post.selftext,
+          date: formatTime(post.created_utc),
+          score: post.score,
+          subreddit: post.subreddit_name_prefixed,
+          numComments: post.num_comments,
+          spoiler: post.spoiler ? true : false,
+          nsfw: post.over_18 ? true : false,
+          isVideo: post.is_video,
+        };
+      })
+      .then(async (posts) => {
+        const time = formatDateNow(new Date());
+        const postsStr = JSON.stringify(posts);
+        var mailOptions = {
+          from: process.env.EMAIL,
+          to: process.env.EMAIL_TO,
+          subject: `New Posts for ${time}`,
+          html: "<h1>Hello!</h1><p>New posts incoming!</p>",
+          attachments: [
+            {
+              filename: `NewPosts-${time}.txt`,
               content: postsStr,
             },
           ],
