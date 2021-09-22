@@ -8,7 +8,7 @@
     "node": "16.6.0"
   },
   "scripts": {
-    "start": "node index",
+    "start": "node --max_old_space_size=2560 index",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
