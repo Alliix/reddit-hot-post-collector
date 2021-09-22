@@ -95,8 +95,7 @@ app.listen(app.get("port"), function () {
         });
       });
 
-    r.getNew()
-      .fetchAll()
+    r.getNew({ limit: 800 })
       .filter((post) => post.selftext !== "")
       .map((post) => {
         return {
