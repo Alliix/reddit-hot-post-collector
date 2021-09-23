@@ -53,8 +53,7 @@ app.get("/", function (request, response) {
 app.listen(app.get("port"), function () {
   cron.schedule("0 0 * * *", function () {
     r.getSubreddit("depression")
-      .getNew()
-      .fetchAll()
+      .getNew({ limit: 800 })
       .filter((post) => post.selftext !== "")
       .map((post) => {
         return {
@@ -91,6 +90,25 @@ app.listen(app.get("port"), function () {
             console.log(error);
           } else {
             console.log("Email sent: " + info.response);
+          }
+        });
+
+        fs.readFile("./posts/depressionPosts.json", "utf8", (err, data) => {
+          if (err) {
+            console.log(err);
+          } else {
+            const obj = JSON.parse(data);
+            posts.map((post) => {
+              if (
+                !obj.posts.find(
+                  (p) => p.author === post.author && p.title === post.title
+                )
+              ) {
+                obj.posts.push(post);
+              }
+            });
+            const json = JSON.stringify(obj);
+            fs.writeFileSync("./posts/depressionPosts.json", json, "utf8");
           }
         });
       });
@@ -132,6 +150,25 @@ app.listen(app.get("port"), function () {
             console.log(error);
           } else {
             console.log("Email sent: " + info.response);
+          }
+        });
+
+        fs.readFile("./posts/newPosts.json", "utf8", (err, data) => {
+          if (err) {
+            console.log(err);
+          } else {
+            const obj = JSON.parse(data);
+            posts.map((post) => {
+              if (
+                !obj.posts.find(
+                  (p) => p.author === post.author && p.title === post.title
+                )
+              ) {
+                obj.posts.push(post);
+              }
+            });
+            const json = JSON.stringify(obj);
+            fs.writeFileSync("./posts/newPosts.json", json, "utf8");
           }
         });
       });
