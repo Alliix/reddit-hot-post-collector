@@ -48,6 +48,17 @@ app.use(express.static("index"));
 
 app.get("/", function (request, response) {
   response.send("Collecting posts!");
+  fs.readFile("./posts/depressionPosts.json", "utf8", (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      const obj = JSON.parse(data);
+
+      obj.posts.push({ test: "post" });
+      const json = JSON.stringify(obj);
+      fs.writeFileSync("./posts/depressionPosts.json", json, "utf8");
+    }
+  });
 });
 
 app.listen(app.get("port"), function () {
