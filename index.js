@@ -3,6 +3,7 @@ import config from "./config.js";
 import cron from "node-cron";
 import nodemailer from "nodemailer";
 import express from "express";
+import fs from "fs";
 
 var app = express();
 
