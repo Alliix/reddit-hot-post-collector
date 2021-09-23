@@ -3,7 +3,6 @@ import config from "./config.js";
 import cron from "node-cron";
 import nodemailer from "nodemailer";
 import express from "express";
-import fs from "fs";
 
 var app = express();
 
@@ -49,17 +48,6 @@ app.use(express.static("index"));
 
 app.get("/", function (request, response) {
   response.send("Collecting posts!");
-  fs.readFile("./posts/depressionPosts.json", "utf8", (err, data) => {
-    if (err) {
-      console.log(err);
-    } else {
-      const obj = JSON.parse(data);
-
-      obj.posts.push({ test: "post" });
-      const json = JSON.stringify(obj);
-      fs.writeFileSync("./posts/depressionPosts.json", json, "utf8");
-    }
-  });
 });
 
 app.listen(app.get("port"), function () {
@@ -104,25 +92,6 @@ app.listen(app.get("port"), function () {
             console.log("Email sent: " + info.response);
           }
         });
-
-        fs.readFile("./posts/depressionPosts.json", "utf8", (err, data) => {
-          if (err) {
-            console.log(err);
-          } else {
-            const obj = JSON.parse(data);
-            posts.map((post) => {
-              if (
-                !obj.posts.find(
-                  (p) => p.author === post.author && p.title === post.title
-                )
-              ) {
-                obj.posts.push(post);
-              }
-            });
-            const json = JSON.stringify(obj);
-            fs.writeFileSync("./posts/depressionPosts.json", json, "utf8");
-          }
-        });
       });
 
     r.getNew({ limit: 800 })
@@ -162,25 +131,6 @@ app.listen(app.get("port"), function () {
             console.log(error);
           } else {
             console.log("Email sent: " + info.response);
-          }
-        });
-
-        fs.readFile("./posts/newPosts.json", "utf8", (err, data) => {
-          if (err) {
-            console.log(err);
-          } else {
-            const obj = JSON.parse(data);
-            posts.map((post) => {
-              if (
-                !obj.posts.find(
-                  (p) => p.author === post.author && p.title === post.title
-                )
-              ) {
-                obj.posts.push(post);
-              }
-            });
-            const json = JSON.stringify(obj);
-            fs.writeFileSync("./posts/newPosts.json", json, "utf8");
           }
         });
       });
